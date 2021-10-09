@@ -1,0 +1,37 @@
+{
+    "prefix": ".",
+    "token": "",
+    "order": [
+      "🔒",
+      "📁",
+      "📦",
+      "🎮",
+      "🎥",
+      "🏞",
+      "🔊",
+      "🔠",
+      "📄",
+      "🔗",
+      "❓"
+    ],
+    "explorer": "channel-id", 
+    "files": "channel-id",
+    "console": "channel-id",
+    "console_webhook": {
+      "id": "",
+      "token": "",
+      "avatar": ""
+    },
+    "emojis": {
+      "download": "875551618819575828",
+      "left": "875551619767468122",
+      "right": "875551620472123494",
+      "trash": "875551621545852969",
+      "up": "875551622258909295"
+    },
+    "status": "channel-id",
+    "timeout": "1m",
+    "logs": {
+      "channel name": "channel id"  
+    }
+  }
