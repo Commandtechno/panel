@@ -23,15 +23,15 @@
       "avatar": ""
     },
     "emojis": {
-      "download": "875551618819575828",
-      "left": "875551619767468122",
-      "right": "875551620472123494",
-      "trash": "875551621545852969",
+      "download": "emoji-id",
+      "left": "emoji-id",
+      "right": "emoji-id",
+      "trash": "emoji-id",
       "up": "875551622258909295"
     },
     "status": "channel-id",
     "timeout": "1m",
     "logs": {
-      "channel name": "channel id"  
+      "pm2 name": "channel id"  
     }
   }
