@@ -1,0 +1,7 @@
+{
+  "prefix": ".",
+  "token": "bot's token",
+
+  "users": ["your user id"],
+  "guilds": ["guilds to enable the bot in"]
+}

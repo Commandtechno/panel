@@ -1,6 +1,4 @@
+config.json
+
 node_modules/
 build/
-build.js
-config.json
-client.js
-pm2.js
