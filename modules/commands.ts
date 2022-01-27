@@ -1,1 +1,0 @@
-export * as explorer from "./explorer/commands";

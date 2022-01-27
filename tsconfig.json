@@ -8,6 +8,6 @@
     "module": "CommonJS",
     "outDir": ".\\build"
   },
-  "files": ["index.ts"],
+  "files": ["src/index.ts"],
   "include": ["**/config.json"]
 }

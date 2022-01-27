@@ -14,7 +14,7 @@ export default async function (interaction: GatewayInteractionCreateDispatchData
         if (option.type === ApplicationCommandOptionType.Subcommand) command = command[option.name];
       }
 
-      command.run(interaction);
+      command(interaction);
       break;
 
     case InteractionType.MessageComponent:
