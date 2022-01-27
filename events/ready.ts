@@ -1,5 +1,5 @@
-import { GatewayReadyDispatchData } from "discord-api-types";
+import type { GatewayReadyDispatchData } from "discord-api-types";
 
-export default function (ready: GatewayReadyDispatchData) {
+export default async function (ready: GatewayReadyDispatchData) {
   console.log("Ready!");
 }
