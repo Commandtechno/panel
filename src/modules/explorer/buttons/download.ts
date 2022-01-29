@@ -1,4 +1,4 @@
-import type { Context } from "../types";
+import { Context } from "../../../types";
 
 export function download({ epheremal }: Context) {
   epheremal("this will download");

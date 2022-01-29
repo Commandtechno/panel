@@ -1,7 +1,8 @@
-import type { Context } from "../types";
+import { Explorer } from "..";
+import { Context } from "../../../types";
 import { dirname } from "path";
 
-export function up({ ack, path }: Context) {
+export function up({ ack }: Context, { path }: Explorer) {
   ack();
   return {
     path: dirname(path),

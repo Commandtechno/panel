@@ -1,6 +1,7 @@
-import type { Context } from "../types";
+import { Explorer } from "..";
+import { Context } from "../../../types";
 
-export function left({ ack, path, page }: Context) {
+export function left({ ack }: Context, { path, page }: Explorer) {
   ack();
   return {
     path,

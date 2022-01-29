@@ -1,12 +1,15 @@
-import type { Context } from "../../types";
-
 export interface Config {
   channel: string;
+  emojis: {
+    download: string;
+    left: string;
+    right: string;
+    trash: string;
+    up: string;
+  };
 }
 
 export interface Explorer {
   path: string;
   page: number;
 }
-
-export interface ButtonContext extends Context, Explorer {}
