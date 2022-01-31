@@ -1,11 +1,17 @@
-import { Explorer } from "..";
+import { APIMessageComponentInteraction } from "discord-api-types";
 import { Context } from "../../../types";
+
+import { parse, render } from "..";
 import { dirname } from "path";
 
-export function up({ ack }: Context, { path }: Explorer) {
-  ack();
-  return {
-    path: dirname(path),
-    page: 0
-  };
+export async function up(
+  interaction: APIMessageComponentInteraction,
+  args: string[],
+  { edit }: Context
+) {
+  const explorer = parse(interaction.message.content);
+  explorer.path = dirname(explorer.path);
+  explorer.page = 0;
+
+  edit(await render(explorer));
 }

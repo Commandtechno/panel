@@ -8,6 +8,6 @@ export function parse(content: string): Explorer {
   const [path, page] = content.split(DIVIDER);
   return {
     path: path.slice(PATH_PREFIX.length),
-    page: parseInt(page.slice(PAGE_PREFIX.length))
+    page: page ? parseInt(page.slice(PAGE_PREFIX.length)) : 0
   };
 }

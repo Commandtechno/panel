@@ -1,3 +1,5 @@
+import { RequestTypes } from "detritus-client-rest";
+
 export interface Config {
   token: string;
 
@@ -7,6 +9,7 @@ export interface Config {
 
 export interface Context {
   ack();
-  reply(content: string);
-  epheremal(content: string);
+  edit(content: string | RequestTypes.CreateInteractionResponseInnerPayload);
+  reply(content: string | RequestTypes.CreateInteractionResponseInnerPayload);
+  epheremal(content: string | RequestTypes.CreateInteractionResponseInnerPayload);
 }

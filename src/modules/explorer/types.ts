@@ -1,5 +1,8 @@
 export interface Config {
   channel: string;
+  files: {
+    channel: string;
+  };
   emojis: {
     download: string;
     left: string;

@@ -1,7 +1,10 @@
 import type { APIChatInputApplicationCommandInteraction } from "discord-api-types";
 import type { Context } from "../../../../types";
-import { config } from "../../config";
+import { render } from "../..";
 
-export function setup(interaction: APIChatInputApplicationCommandInteraction, {}: Context) {
-  console.log(config.channel);
+export async function setup(
+  interaction: APIChatInputApplicationCommandInteraction,
+  { reply }: Context
+) {
+  reply(await render({ path: process.cwd(), page: 0 }));
 }

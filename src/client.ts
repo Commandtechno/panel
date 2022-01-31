@@ -1,4 +1,4 @@
-import config from "./config";
+import config from "./config.json";
 
 import { Client } from "detritus-client-rest";
 import { Gateway } from "detritus-client-socket";
