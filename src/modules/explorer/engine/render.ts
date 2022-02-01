@@ -39,13 +39,13 @@ export async function render({
   const end = start + 20;
   const controls: RequestTypes.CreateInteractionResponseInnerPayload["components"] = [
     {
-      customId: "trash",
+      customId: "___explorer_trash",
       type: ComponentType.Button,
       style: ButtonStyle.Danger,
       emoji: { id: config.emojis.trash }
     },
     {
-      customId: "download",
+      customId: "___explorer_download",
       type: ComponentType.Button,
       style: ButtonStyle.Success,
       emoji: { id: config.emojis.download }
@@ -54,7 +54,7 @@ export async function render({
 
   if (path !== dirname(path))
     controls.push({
-      customId: "up",
+      customId: "___explorer_up",
       type: ComponentType.Button,
       style: ButtonStyle.Primary,
       emoji: { id: config.emojis.up }
@@ -64,14 +64,14 @@ export async function render({
     content += "\n`Page` " + page;
     controls.push(
       {
-        customId: "left",
+        customId: "___explorer_left",
         disabled: page === 0,
         type: ComponentType.Button,
         style: ButtonStyle.Primary,
         emoji: { id: config.emojis.left }
       },
       {
-        customId: "right",
+        customId: "___explorer_right",
         disabled: end > fileNames.length,
         type: ComponentType.Button,
         style: ButtonStyle.Primary,
@@ -110,8 +110,8 @@ export async function render({
     ...chunk(
       files
         .sort((a, b) => {
-          if (a.isDirectory && !b.isDirectory) return -1;
           if (!a.isDirectory && b.isDirectory) return 1;
+          if (a.isDirectory && !b.isDirectory) return -1;
           return a.name.localeCompare(b.name);
         })
         .slice(start, end),
@@ -120,7 +120,7 @@ export async function render({
       type: ComponentType.ActionRow,
       components: row.map(file => ({
         label: file.name,
-        customId: (file.isDirectory ? "dir_" : "file_") + file.name,
+        customId: file.name,
         disabled: file.emoji === "🔒",
         type: ComponentType.Button,
         style: ButtonStyle.Secondary,

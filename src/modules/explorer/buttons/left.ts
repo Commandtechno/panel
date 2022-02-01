@@ -3,9 +3,8 @@ import { Context } from "../../../types";
 
 import { parse, render } from "..";
 
-export async function left(
+export async function ___explorer_left(
   interaction: APIMessageComponentInteraction,
-  args: string[],
   { edit }: Context
 ) {
   const explorer = parse(interaction.message.content);

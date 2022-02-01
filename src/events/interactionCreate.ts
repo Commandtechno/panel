@@ -60,9 +60,14 @@ export default async function (interaction: GatewayInteractionCreateDispatchData
       break;
 
     case InteractionType.MessageComponent:
-      const args = interaction.data.custom_id.split("_");
-      const button = buttons[args.shift()];
-      button(interaction, args, ctx);
+      const button = buttons[interaction.data.custom_id];
+      if (button) button(interaction, ctx);
+      else {
+        switch (interaction.channel_id) {
+          case explorer.config.channel:
+            explorer.button(interaction, ctx);
+        }
+      }
       break;
   }
 }

@@ -4,9 +4,8 @@ import { Context } from "../../../types";
 import { parse, render } from "..";
 import { dirname } from "path";
 
-export async function up(
+export async function ___explorer_up(
   interaction: APIMessageComponentInteraction,
-  args: string[],
   { edit }: Context
 ) {
   const explorer = parse(interaction.message.content);

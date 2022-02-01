@@ -1,9 +1,11 @@
 import { APIMessageComponentInteraction } from "discord-api-types";
 import { Context } from "../../../types";
+import { ___cancel } from "..";
 
-export function ___explorer_download(
+export async function ___console_cancel(
   interaction: APIMessageComponentInteraction,
-  { epheremal }: Context
+  { ack }: Context
 ) {
-  epheremal("this will download");
+  await ack();
+  ___cancel();
 }

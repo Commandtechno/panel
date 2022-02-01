@@ -1,5 +1,5 @@
 import type { GatewayMessageCreateDispatchData } from "discord-api-types";
-import { explorer } from "../modules";
+import { console, explorer } from "../modules";
 import config from "../config.json";
 
 export default function (message: GatewayMessageCreateDispatchData) {
@@ -9,6 +9,10 @@ export default function (message: GatewayMessageCreateDispatchData) {
   switch (message.channel_id) {
     case explorer.config.channel:
       explorer.message(message);
+      break;
+
+    case console.config.channel:
+      console.message(message);
       break;
   }
 }
