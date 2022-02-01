@@ -42,7 +42,9 @@ export default async function (interaction: GatewayInteractionCreateDispatchData
       interaction.id,
       interaction.token,
       InteractionResponseType.ChannelMessageWithSource,
-      typeof data === "string" ? { content: data } : { flags: MessageFlags.Ephemeral, ...data }
+      typeof data === "string"
+        ? { flags: MessageFlags.Ephemeral, content: data }
+        : { flags: MessageFlags.Ephemeral, ...data }
     );
   }
 

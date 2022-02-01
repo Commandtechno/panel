@@ -1,10 +1,11 @@
-import { APIChannel, APIMessage, ChannelType } from "discord-api-types";
+import { APIChannel, APIMessage, ButtonStyle, ComponentType } from "discord-api-types";
 import type { RequestTypes } from "detritus-client-rest";
-import pm2, { ProcessDescription } from "pm2";
+import { ChannelType } from "discord-api-types";
 import prettyBytes from "pretty-bytes";
 
 import { config } from "./config";
 import { api } from "../../client";
+import pm2 from "./pm2";
 
 function formatLog(emoji: string, title: string, data: string) {
   if (data.length > 1960) data = data.slice(0, 1960) + "...";
@@ -57,14 +58,91 @@ function formatProcess(process: pm2.ProcessDescription): RequestTypes.CreateMess
           `\`Uptime\` <t:${uptimeSeconds}:f> (<t:${uptimeSeconds}:R>)`
         ].join("\n")
       }
+    ],
+    components: [
+      {
+        type: ComponentType.ActionRow,
+        components: [
+          {
+            customId: "___pm2_restart",
+            type: ComponentType.Button,
+            style: ButtonStyle.Success,
+            emoji: { name: "🔄" }
+          },
+          {
+            customId: "___pm2_stop",
+            type: ComponentType.Button,
+            style: ButtonStyle.Danger,
+            emoji: { name: "🛑" }
+          }
+        ]
+      }
     ]
   };
 }
 
+const channels = new Map<string, string>();
+const messages = new Map<string, string>();
+
+let guildId: string;
+async function createChannel(name: string) {
+  const newChannel: APIChannel = await api.createGuildChannel(guildId, {
+    name,
+    topic: name,
+
+    type: ChannelType.GuildText,
+    parentId: config.logs.category
+  });
+
+  channels.set(name, newChannel.id);
+  return newChannel.id;
+}
+
+async function createMessage(process: pm2.ProcessDescription) {
+  const newMessage: APIMessage = await api.createMessage(
+    config.status.channel,
+    formatProcess(process)
+  );
+
+  messages.set(process.name, newMessage.id);
+  return newMessage.id;
+}
+
+async function getProcess(name: string) {
+  return new Promise<pm2.ProcessDescription>((resolve, reject) =>
+    pm2.describe(name, (err, processes) => {
+      if (err) return reject(err);
+      const [process] = processes;
+      resolve(process);
+    })
+  );
+}
+
+async function getAllProcesses() {
+  return new Promise<pm2.ProcessDescription[]>((resolve, reject) =>
+    pm2.list((err, processes) => {
+      if (err) return reject(err);
+      resolve(processes);
+    })
+  );
+}
+
+async function updateStatus(process: pm2.ProcessDescription) {
+  if (!channels.has(process.name)) await createChannel(process.name);
+  const message = messages.get(process.name) ?? (await createMessage(process));
+  await api.editMessage(config.status.channel, message, formatProcess(process));
+}
+
+async function updateAllStatuses() {
+  const processes = await getAllProcesses();
+  for (const process of processes) await updateStatus(process);
+}
+
 export default async function () {
-  const channels = new Map<string, string>();
   const rawCategory: APIChannel = await api.fetchChannel(config.logs.category);
-  const rawChannels: APIChannel[] = await api.fetchGuildChannels(rawCategory.guild_id);
+  guildId = rawCategory.guild_id;
+
+  const rawChannels: APIChannel[] = await api.fetchGuildChannels(guildId);
   for (const channel of rawChannels)
     if (
       channel.type == ChannelType.GuildText &&
@@ -73,20 +151,13 @@ export default async function () {
     )
       channels.set(channel.name, channel.id);
 
-  async function createChannel(name: string) {
-    const newChannel: APIChannel = await api.createGuildChannel(rawCategory.guild_id, {
-      name,
-      topic: name,
+  const rawMessages: APIMessage[] = await api.fetchMessages(config.status.channel);
+  for (const message of rawMessages)
+    for (const embed of message.embeds) messages.set(embed.title, message.id);
 
-      type: ChannelType.GuildText,
-      parentId: rawCategory.id
-    });
+  await updateAllStatuses();
+  setInterval(updateAllStatuses, config.status.interval);
 
-    channels.set(name, newChannel.id);
-    return newChannel.id;
-  }
-
-  pm2.connect(() => {});
   pm2.launchBus((err, bus) => {
     if (err) {
       console.error(err);
@@ -106,7 +177,10 @@ export default async function () {
     });
 
     bus.on("process:event", async event => {
-      updateStatus();
+      (async () => {
+        const process = await getProcess(event.process.name);
+        updateStatus(process);
+      })();
 
       const name = event.process.name;
       const channel = channels.get(name) ?? (await createChannel(name));
@@ -128,36 +202,4 @@ export default async function () {
       }
     });
   });
-
-  const messages = new Map<string, string>();
-  const rawMessages: APIMessage[] = await api.fetchMessages(config.status.channel);
-  for (const message of rawMessages)
-    for (const embed of message.embeds) messages.set(embed.title, message.id);
-
-  async function createMessage(process: ProcessDescription) {
-    const newMessage: APIMessage = await api.createMessage(
-      config.status.channel,
-      formatProcess(process)
-    );
-
-    messages.set(process.name, newMessage.id);
-    return newMessage.id;
-  }
-
-  async function updateStatus() {
-    const processes: pm2.ProcessDescription[] = await new Promise((resolve, reject) =>
-      pm2.list((err, res) => {
-        if (err) reject(err);
-        else resolve(res);
-      })
-    );
-
-    for (const process of processes) {
-      const message = messages.get(process.name) ?? (await createMessage(process));
-      await api.editMessage(config.status.channel, message, formatProcess(process));
-    }
-  }
-
-  updateStatus();
-  setInterval(updateStatus, config.status.interval);
 }
