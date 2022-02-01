@@ -67,13 +67,13 @@ function formatProcess(process: pm2.ProcessDescription): RequestTypes.CreateMess
             customId: "___pm2_restart",
             type: ComponentType.Button,
             style: ButtonStyle.Success,
-            emoji: { name: "🔄" }
+            emoji: { id: config.emojis.restart }
           },
           {
             customId: "___pm2_stop",
             type: ComponentType.Button,
             style: ButtonStyle.Danger,
-            emoji: { name: "🛑" }
+            emoji: { id: config.emojis.stop }
           }
         ]
       }

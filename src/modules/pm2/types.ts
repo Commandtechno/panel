@@ -1,9 +1,13 @@
 export interface Config {
+  logs: {
+    category: string;
+  };
   status: {
     channel: string;
     interval: number;
   };
-  logs: {
-    category: string;
+  emojis: {
+    stop: string;
+    restart: string;
   };
 }
