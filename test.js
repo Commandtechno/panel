@@ -1,3 +1,3 @@
 setInterval(() => {
-  console.log("cum");
-}, 1000);
+  console.log("balls");
+}, 10000);

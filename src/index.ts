@@ -1,3 +1,6 @@
+import { pm2 } from "./modules";
+pm2.default();
+
 import { GatewayDispatchEvents } from "discord-api-types";
 import { ws } from "./client";
 

@@ -5,11 +5,12 @@ import {
   GatewayMessageCreateDispatchData
 } from "discord-api-types";
 import type { ChildProcessWithoutNullStreams } from "child_process";
-import { RequestTypes } from "detritus-client-rest";
+import type { RequestTypes } from "detritus-client-rest";
 import { AsyncQueue } from "@sapphire/async-queue";
 import { resolve } from "path";
 import { spawn } from "child_process";
 import { api } from "../../client";
+import { config } from ".";
 
 let cwd = process.cwd();
 let cmd: ChildProcessWithoutNullStreams;
@@ -20,7 +21,7 @@ let errMsg: APIMessage;
 const outQueue = new AsyncQueue();
 const errQueue = new AsyncQueue();
 
-const components: RequestTypes.CreateMessage["components"] = [
+const cancelComponents: RequestTypes.CreateMessage["components"] = [
   {
     type: ComponentType.ActionRow,
     components: [
@@ -34,13 +35,39 @@ const components: RequestTypes.CreateMessage["components"] = [
   }
 ];
 
-export function format(emoji: string, data: string) {
-  return `${emoji} \`${cwd}\`\n\`\`\`ansi\n${data}\n\`\`\``;
+function format(emoji: string, data: string) {
+  if (data.length > 1960) data = data.slice(0, 1960) + "...";
+  return `${emoji} \`${cwd}\`\n\`\`\`ansi\n${data.replaceAll("```", "`\u200b``")}\n\`\`\``;
+}
+
+async function updateOut(finished = false) {
+  await outQueue.wait();
+
+  const content = format(finished ? "✅" : "📥", out);
+  const components = finished ? [] : cancelComponents;
+
+  if (outMsg) outMsg = await api.editMessage(outMsg.channel_id, outMsg.id, { content, components });
+  else if (!finished) outMsg = await api.createMessage(config.channel, { content, components });
+
+  outQueue.shift();
+}
+
+async function updateErr(finished = false) {
+  await errQueue.wait();
+
+  const content = format(finished ? "⛔" : "📤", err);
+  const components = finished ? [] : cancelComponents;
+
+  if (errMsg) errMsg = await api.editMessage(errMsg.channel_id, errMsg.id, { content, components });
+  else if (!finished) errMsg = await api.createMessage(config.channel, { content, components });
+
+  errQueue.shift();
 }
 
 export function message(message: GatewayMessageCreateDispatchData) {
   if (cmd) {
-    api.createMessage(message.channel_id, "Command is already running");
+    cmd.stdin.write(message.content);
+    cmd.stdin.write("\n");
     return;
   }
 
@@ -59,76 +86,22 @@ export function message(message: GatewayMessageCreateDispatchData) {
 
   cmd.stdout.on("data", async data => {
     out += data.toString();
-
-    await outQueue.wait();
-    if (outMsg)
-      outMsg = await api.editMessage(message.channel_id, outMsg.id, {
-        content: format("📥", out),
-        components
-      });
-    else
-      outMsg = await api.createMessage(message.channel_id, {
-        content: format("📥", data),
-        components
-      });
-
-    outQueue.shift();
+    updateOut();
   });
 
   cmd.stderr.on("data", async data => {
     err += data.toString();
-
-    await errQueue.wait();
-    if (errMsg)
-      errMsg = await api.editMessage(message.channel_id, errMsg.id, {
-        content: format("📤", err),
-        components
-      });
-    else
-      errMsg = await api.createMessage(message.channel_id, {
-        content: format("📤", err),
-        components
-      });
-
-    errQueue.shift();
+    updateErr();
   });
 
   cmd.on("error", async error => {
     err += error.message;
-
-    await errQueue.wait();
-    if (errMsg)
-      errMsg = await api.editMessage(message.channel_id, errMsg.id, {
-        content: format("📤", err),
-        components
-      });
-    else
-      errMsg = await api.createMessage(message.channel_id, {
-        content: format("📤", err),
-        components
-      });
-
-    errQueue.shift();
+    updateErr();
   });
 
   cmd.on("close", async () => {
-    await outQueue.wait();
-    if (outMsg)
-      outMsg = await api.editMessage(message.channel_id, outMsg.id, {
-        content: format("✅", out),
-        components: []
-      });
-
-    outQueue.shift();
-
-    await errQueue.wait();
-    if (errMsg)
-      errMsg = await api.editMessage(message.channel_id, errMsg.id, {
-        content: format("❌", err),
-        components: []
-      });
-
-    errQueue.shift();
+    await updateOut(true);
+    await updateErr(true);
 
     if (!outMsg && !errMsg) await api.createReaction(message.channel_id, message.id, "✅");
 
@@ -145,6 +118,7 @@ export function message(message: GatewayMessageCreateDispatchData) {
 export function ___cancel() {
   if (cmd) {
     cmd.kill();
+    cmd.stdin.destroy();
     cmd.stdout.destroy();
     cmd.stderr.destroy();
   }
